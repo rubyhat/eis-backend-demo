@@ -28,9 +28,7 @@ const corsOptions = {
     "http://localhost:5173",
     "http://localhost:5174",
     "https://test.simpleweb.kz",
-    "https://eis.whitedog.kz",
-    "https://test-roze.whitedog.kz",
-    "https://roze.kz",
+    "https://testing.simpleweb.kz",
   ],
 };
 
