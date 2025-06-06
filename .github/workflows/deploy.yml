@@ -1,0 +1,38 @@
+name: Deploy to Server
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Deploy to PS Server
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
+        run: |
+          echo "${SSH_PRIVATE_KEY}" > private_key
+          chmod 600 private_key
+          mkdir -p ~/.ssh
+          ssh-keyscan ${SSH_HOST} >> ~/.ssh/known_hosts
+          rsync -avz -e "ssh -i private_key" --exclude node_modules ./ ${SSH_USERNAME}@${SSH_HOST}:/var/www/eis-backend
+          ssh -i private_key ${SSH_USERNAME}@${SSH_HOST} << 'EOF'
+            cd /var/www/eis-backend
+            npm install
+            pm2 restart all

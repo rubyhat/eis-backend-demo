@@ -1,0 +1,326 @@
+openapi: 3.0.0
+info:
+  title: EIS Object API
+  version: 1.0.0
+  description: API for managing real estate objects (COMPOSITION VARIANT)
+
+components:
+  schemas:
+    # Общие характеристики, вне зависимости от категории объекта
+    BaseEstateObject:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [sell, rent]
+        category:
+          type: string
+          enum: [apartment, house, land, commercial, business, factory, other]
+        estateAgent:
+          type: string # ObjectId in MongoDB
+        geoPosition:
+          type: object
+          properties:
+            city:
+              type: string
+            street:
+              type: string
+            houseNumber:
+              type: string
+            isInfoHidden:
+              type: boolean
+            mapLink:
+              type: string
+        description:
+          type: string
+        bedrooms: # idk what its for, should it be in the basic or in other one?
+          type: integer
+        price:
+          type: number
+        discount:
+          type: number
+        mortgage:
+          type: boolean
+        visibilityStatus:
+          type: string
+          enum: [active, sold, canceled, checking]
+        videoLink:
+          type: string
+        hasSwap:
+          type: boolean
+        isCommercial:
+          type: boolean
+        plede:
+          type: string
+        documents:
+          type: string
+    # Общие характеристики, которые могут быть в квартире/доме
+    ApartmentEstateObject:
+      allOf:
+        - $ref: "#/components/schemas/BaseEstateObject"
+        - type: object
+      properties:
+        roomCount:
+          type: integer
+        houseBuildingYear:
+          type: integer
+        houseSquare:
+          type: number
+        kitchenSquare:
+          type: number
+        countFloor:
+          type: integer
+        ceilingHeight:
+          type: number
+        toiletCount:
+          type: integer
+        houseCondition:
+          type: string
+          enum: [perfect, good, bad, free, build]
+        houseWallMaterial:
+          type: string
+          enum:
+            [
+              brick,
+              wood,
+              gasSilicateBlock,
+              cinderBlock,
+              heatBlock,
+              panel,
+              monolith,
+              saman,
+              gasConcreteBlock,
+              foamBlock,
+            ]
+        houseRoofMaterial:
+          type: string
+          enum:
+            [tile, soft, metal, ondulin, metalTile, corrugatedSheetRoof, slate]
+        furniture:
+          type: string
+          enum: [part, full, none]
+        ethernet:
+          type: string
+          enum: [connected, toConnect, none]
+    # Характеристики, которые могут быть ТОЛЬКО в доме
+    HouseEstateObject:
+      allOf:
+        - $ref: "#/components/schemas/ApartmentEstateObject"
+        - type: object
+      properties:
+        plotSquare:
+          type: number
+        hasBasement:
+          type: boolean
+        hasMansard:
+          type: boolean
+        houseType:
+          type: string
+          enum: [part, full, cottage]
+        electricType:
+          type: string
+          enum: [part, full, none]
+        heatingType:
+          type: string
+          enum: [central, gas, solid, liquid, none]
+        gasType:
+          type: string
+          enum: [central, auto, canConnect, none]
+        sewerType:
+          type: string
+          enum: [central, septic, canConnect, none]
+        toiletType:
+          type: string
+          enum: [in, out]
+        waterType:
+          type: string
+          enum: [central, borehole, canConnect, none]
+    # Характеристики, которые могут быть ТОЛЬКО в квартире
+    FlatEstateObject:
+      allOf:
+        - $ref: "#/components/schemas/ApartmentEstateObject"
+        - type: object
+      properties:
+        targetFloor:
+          type: integer
+        totalFloor:
+          type: integer
+    # Характеристики, которые могут быть ТОЛЬКО в земельном участке
+    LandEstateObject:
+      allOf:
+        - $ref: "#/components/schemas/BaseEstateObject"
+        - type: object
+      properties:
+        landSquare:
+          type: number
+    # Характеристики, которые могут быть ТОЛЬКО в бизнесе
+    BusinessEstateObject:
+      allOf:
+        - $ref: "#/components/schemas/BaseEstateObject"
+        - type: object
+      properties: {}
+    # Характеристики, которые могут быть ТОЛЬКО в заводе/фабрике
+    FactoryEstateObject:
+      allOf:
+        - $ref: "#/components/schemas/BaseEstateObject"
+        - type: object
+      properties: {}
+    # Характеристики, которые могут быть ТОЛЬКО в "другом"
+    OtherEstateObject:
+      allOf:
+        - $ref: "#/components/schemas/BaseEstateObject"
+        - type: object
+      properties: {}
+
+paths:
+  /catalog:
+    get:
+      summary: Получить отфильтрованный список всех объектов недвижимости
+      parameters:
+        - in: query
+          name: city
+          schema:
+            type: string
+        - in: query
+          name: category
+          schema:
+            type: string
+        - in: query
+          name: houseWallMaterial
+          schema:
+            type: string
+        - in: query
+          name: houseCondition
+          schema:
+            type: string
+        - in: query
+          name: roomCount
+          schema:
+            type: integer
+        - in: query
+          name: priceStart
+          schema:
+            type: number
+        - in: query
+          name: priceEnd
+          schema:
+            type: number
+        - in: query
+          name: houseSquare
+          schema:
+            type: number
+        - in: query
+          name: kitchenSquare
+          schema:
+            type: number
+        - in: query
+          name: houseBuildingYear
+          schema:
+            type: integer
+        - in: query
+          name: mortgage
+          schema:
+            type: boolean
+        - in: query
+          name: hasSwap
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: Отфильтрованный список объектов недвижимости
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  oneOf:
+                    - $ref: "#/components/schemas/BaseEstateObject"
+                    - $ref: "#/components/schemas/HouseEstateObject"
+                    - $ref: "#/components/schemas/FlatEstateObject"
+                    - $ref: "#/components/schemas/LandEstateObject"
+                    - $ref: "#/components/schemas/BusinessEstateObject"
+                    - $ref: "#/components/schemas/FactoryEstateObject"
+                    - $ref: "#/components/schemas/OtherEstateObject"
+
+  /catalog/{id}:
+    get:
+      summary: Получить один экземпляр объекта недвижимости
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Экземпляр объекта недвижимости
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/BaseEstateObject"
+                  - $ref: "#/components/schemas/HouseEstateObject"
+                  - $ref: "#/components/schemas/FlatEstateObject"
+                  - $ref: "#/components/schemas/LandEstateObject"
+                  - $ref: "#/components/schemas/BusinessEstateObject"
+                  - $ref: "#/components/schemas/FactoryEstateObject"
+                  - $ref: "#/components/schemas/OtherEstateObject"
+
+  /catalog/create:
+    post:
+      summary: Создать новый экземпляр объекта недвижимости
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: "#/components/schemas/BaseEstateObject"
+                - $ref: "#/components/schemas/HouseEstateObject"
+                - $ref: "#/components/schemas/FlatEstateObject"
+                - $ref: "#/components/schemas/LandEstateObject"
+                - $ref: "#/components/schemas/BusinessEstateObject"
+                - $ref: "#/components/schemas/FactoryEstateObject"
+                - $ref: "#/components/schemas/OtherEstateObject"
+      responses:
+        "201":
+          description: Экземпляр объекта недвижимости создан
+
+  /catalog/{id}/delete:
+    delete:
+      summary: Удалить экземпляр объекта недвижимости
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Экземпляр объекта недвижимости удален
+
+  /catalog/{id}/update:
+    put:
+      summary: Редактировать экземпляр объекта недвижимости
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: "#/components/schemas/BaseEstateObject"
+                - $ref: "#/components/schemas/HouseEstateObject"
+                - $ref: "#/components/schemas/FlatEstateObject"
+                - $ref: "#/components/schemas/LandEstateObject"
+                - $ref: "#/components/schemas/BusinessEstateObject"
+                - $ref: "#/components/schemas/FactoryEstateObject"
+                - $ref: "#/components/schemas/OtherEstateObject"
+      responses:
+        "200":
+          description: Экземпляр объекта недвижимости обновлен

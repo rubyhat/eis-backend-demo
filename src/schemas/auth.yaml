@@ -1,0 +1,165 @@
+openapi: 3.0.0
+info:
+  title: EIS JWT Auth API
+  version: 0.0.1
+  description: EIS service for token-based authentication
+
+components:
+  securitySchemes:
+    jwt:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    cookieAuth:
+      type: string
+      in: cookie
+      name: refreshToken # cookie name
+
+  schemas:
+    User:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+        username:
+          type: string
+        name:
+          type: string
+        role:
+          type: string
+          enum: [Admin, Manager, Member]
+        phone:
+          type: string
+      required:
+        - email
+        - password
+        - name
+        - username
+
+paths:
+  /auth/register:
+    post:
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/User"
+      responses:
+        "201":
+          description: User registered successfully
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+                example: tokenSession=abcde12345; Path=/; HttpOnly
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken:
+                    type: string
+                  accessTokenExpiration:
+                    type: integer
+        "400":
+          description: Bad request
+
+  /auth/login:
+    post:
+      summary: Log in a user and get a JWT token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: email
+                  example: john_doe@gmail.com
+                password:
+                  type: string
+                  example: my_secure_password
+              required:
+                - email
+                - password
+      responses:
+        "200":
+          description: User logged in successfully
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+                example: tokenSession=abcde12345; Path=/; HttpOnly
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken:
+                    type: string
+                  accessTokenExpiration:
+                    type: integer
+        "401":
+          description: Unauthorized
+        "400":
+          description: Bad request
+
+  /auth/logout:
+    post:
+      summary: Log out the user
+      security:
+        - jwt: []
+      responses:
+        "200":
+          description: Successful logout
+        "400":
+          description: Bad request
+        "401":
+          description: Unauthorized
+        "500":
+          description: Internal server error
+
+  /auth/refresh:
+    post:
+      security:
+        - cookieAuth: []
+      summary: Refresh access token
+      responses:
+        "200":
+          description: Successful refresh
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken:
+                    type: string
+                    description: The new access token
+                  accessTokenExpiration:
+                    type: string
+                    description: The expiration time of the access token
+        "400":
+          description: Bad request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "500":
+          description: Internal server error
+
+  /auth/ping:
+    get:
+      summary: Access a protected resource using a valid JWT token
+      security:
+        - jwt: []
+      responses:
+        "200":
+          description: Successfully accessed protected resource
+        "401":
+          description: Unauthorized
