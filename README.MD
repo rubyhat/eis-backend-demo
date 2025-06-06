@@ -1,4 +1,4 @@
-# Install locally
+# Install locally!
 
 0. npm install
 1. install docker
