@@ -71,7 +71,7 @@ export const TelegramService = {
       order;
 
     // Формируем ссылку в админку
-    const orderLink = `https://eis.whitedog.kz/orders/sell/${_id}`;
+    const orderLink = `https://testing.simpleweb.kz/orders/sell/${_id}`;
 
     // Форматируем дату и время для вывода
     const date = new Date(createdAt).toLocaleString("ru-RU", {
@@ -121,7 +121,7 @@ ${houseSquare ? `<b>📐 Площадь:</b> ${houseSquare} м²` : ""}
     const { _id, title, createdAt, estateId } = order;
 
     // Формируем ссылку в админку
-    const orderLink = `https://eis.whitedog.kz/admin/orders/feedback?estateId=${estateId}`;
+    const orderLink = `https://testing.simpleweb.kz/orders/feedback?estateId=${estateId}`;
 
     // Форматируем дату и время для вывода
     const date = new Date(createdAt).toLocaleString("ru-RU", {

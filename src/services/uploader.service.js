@@ -7,7 +7,7 @@ import multer from "multer";
 import { v4 as uuidv4 } from "uuid";
 import sharp from "sharp";
 
-const MEDIA_ROOT_URL = "https://eis-media.object.pscloud.io";
+const MEDIA_ROOT_URL = "https://eis-demo.object.pscloud.io";
 const ENDPOINT = "https://object.pscloud.io";
 
 async function convertToWebp(fileBuffer, width) {
@@ -42,7 +42,7 @@ export async function uploadToS3(file, folder, width) {
   const webpBuffer = await convertToWebp(fileBuffer, width);
 
   const params = {
-    Bucket: "eis-media",
+    Bucket: "eis-demo",
     Key: objectKey,
     Body: webpBuffer,
     ACL: "public-read",
@@ -72,7 +72,7 @@ export const deleteImageFromS3 = async (imageKey) => {
     },
   });
   const deleteParams = {
-    Bucket: "eis-media",
+    Bucket: "eis-demo",
     Key: imageKey,
   };
 

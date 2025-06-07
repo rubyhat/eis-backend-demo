@@ -193,10 +193,10 @@ export class SellOrderService {
       if (sellOrder.images.length > 0) {
         for (const image of sellOrder.images) {
           const imageKey = image.imageUrl.split(
-            "https://eis-media.object.pscloud.io/"
+            "https://eis-demo.object.pscloud.io/"
           )[1];
           const thumbKey = image.thumbnailUrl.split(
-            "https://eis-media.object.pscloud.io/"
+            "https://eis-demo.object.pscloud.io/"
           )[1];
           try {
             await deleteImageFromS3(imageKey);
