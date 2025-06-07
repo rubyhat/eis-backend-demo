@@ -147,6 +147,6 @@ ${houseSquare ? `<b>📐 Площадь:</b> ${houseSquare} м²` : ""}
       },
     };
 
-    await TelegramService.sendMessage(message, inlineKeyboard, 6);
+    await TelegramService.sendMessage(message, inlineKeyboard, 3);
   },
 };
