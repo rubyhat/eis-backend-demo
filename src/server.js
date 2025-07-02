@@ -22,14 +22,22 @@ const API_VERSION = "/api/v1";
 
 const app = express();
 
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://localhost:5174",
+  "https://test.simpleweb.kz",
+  "https://testing.simpleweb.kz",
+];
+
 const corsOptions = {
   credentials: true, // Нужны, так как refreshToken в HTTP-only cookie
-  origin: [
-    "http://localhost:5173",
-    "http://localhost:5174",
-    "https://test.simpleweb.kz",
-    "https://testing.simpleweb.kz",
-  ],
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
 };
 
 app.options("*", cors(corsOptions)); // обработка preflight OPTIONS
